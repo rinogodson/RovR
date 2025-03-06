@@ -17,23 +17,33 @@ def main(stdscr):
   f_index = 0
   history = []
   height, width = stdscr.getmaxyx()
+  max_visible_items = height - 6
+  scroll_offset = max(0, f_index - max_visible_items + 1)
 
   while True:
+
+    if f_index < scroll_offset:
+      scroll_offset = f_index
+    elif f_index >= scroll_offset + max_visible_items:
+      scroll_offset = f_index - max_visible_items + 1
+
     stdscr.border(0)
     stdscr.addstr(0, 2, " RovR 🛰 ", curses.A_BOLD)
 
-    stdscr.addstr(1, 2, f" 📂 {c_dir}", curses.A_BOLD)
+    stdscr.addstr(1, 2, f"💾{c_dir}", curses.A_BOLD)
 
-    for i, item in enumerate(f_list):
+    for i, item in enumerate(f_list[scroll_offset:scroll_offset + max_visible_items]):
       full_path = os.path.join(c_dir, item)
       is_dir = os.path.isdir(full_path)
+
+      actual_index = i + scroll_offset
 
       color = curses.color_pair(1) if is_dir else curses.color_pair(2)
 
       display_text = f"{' 📁' if is_dir else ' 📄'}{item}"
       padded_text = ">"+display_text.ljust(width - 6)
 
-      if i == f_index:
+      if actual_index == f_index:
           stdscr.attron(curses.color_pair(3) | curses.A_BOLD)
           stdscr.addstr(i + 3, 2, padded_text)
           stdscr.attroff(curses.color_pair(3) | curses.A_BOLD)
@@ -67,6 +77,13 @@ def main(stdscr):
     elif key == curses.KEY_LEFT:
       if history:
         c_dir = history.pop()
+        f_list = sorted(os.listdir(c_dir))
+        f_index = 0
+      else:
+        parent_dir = os.path.dirname(c_dir)
+        if parent_dir != c_dir:  # Prevent infinite loop at root
+            c_dir = parent_dir
+        c_dir = parent_dir
         f_list = sorted(os.listdir(c_dir))
         f_index = 0
     stdscr.clear()
