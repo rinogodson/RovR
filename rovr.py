@@ -9,7 +9,6 @@ def main(stdscr):
   curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLUE)
 
   curses.curs_set(0)
-  stdscr.clear()
   
   #variables:
   c_dir = os.getcwd()
@@ -21,7 +20,7 @@ def main(stdscr):
   scroll_offset = max(0, f_index - max_visible_items + 1)
 
   while True:
-
+    stdscr.clear()
     if f_index < scroll_offset:
       scroll_offset = f_index
     elif f_index >= scroll_offset + max_visible_items:
@@ -44,9 +43,11 @@ def main(stdscr):
       padded_text = ">"+display_text.ljust(width - 6)
 
       if actual_index == f_index:
-          stdscr.attron(curses.color_pair(3) | curses.A_BOLD)
+          stdscr.attron(curses.color_pair(3))
+          stdscr.attron(curses.A_BOLD)
           stdscr.addstr(i + 3, 2, padded_text)
-          stdscr.attroff(curses.color_pair(3) | curses.A_BOLD)
+          stdscr.attroff(curses.color_pair(3))
+          stdscr.attron(curses.A_BOLD)
       else:
           stdscr.addstr(i + 3, 2, display_text, color)
 
@@ -86,7 +87,6 @@ def main(stdscr):
         c_dir = parent_dir
         f_list = sorted(os.listdir(c_dir))
         f_index = 0
-    stdscr.clear()
     stdscr.refresh()
 
 curses.wrapper(main)
