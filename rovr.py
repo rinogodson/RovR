@@ -1,6 +1,8 @@
 import curses
 import os
 
+dotFiles = False
+
 def main(stdscr):
 
   curses.start_color()
@@ -12,7 +14,7 @@ def main(stdscr):
   
   #variables:
   c_dir = os.getcwd()
-  f_list = sorted(os.listdir(c_dir))
+  f_list = filterList(sorted(os.listdir(c_dir)), c_dir)
   f_index = 0
   history = []
   height, width = stdscr.getmaxyx()
@@ -68,7 +70,7 @@ def main(stdscr):
         try:
           history.append(c_dir)
           c_dir = new_path
-          f_list = sorted(os.listdir(c_dir))
+          f_list = filterList(sorted(os.listdir(c_dir)), c_dir)
           if not f_list:
             f_list = ["(Empty Folder.)"]
           f_index = 0
@@ -76,17 +78,25 @@ def main(stdscr):
             stdscr.addstr(len(f_list) + 4, 2, "🚫 Access Denied", curses.color_pair(1))
 
     elif key == curses.KEY_LEFT:
-      if history:
-        c_dir = history.pop()
-        f_list = sorted(os.listdir(c_dir))
-        f_index = 0
-      else:
-        parent_dir = os.path.dirname(c_dir)
-        if parent_dir != c_dir:  # Prevent infinite loop at root
-            c_dir = parent_dir
-        c_dir = parent_dir
-        f_list = sorted(os.listdir(c_dir))
-        f_index = 0
+      parent_dir = os.path.dirname(c_dir)
+      dir_name = os.path.basename(c_dir)
+      if parent_dir != c_dir:  # Prevent infinite loop at root
+          c_dir = parent_dir
+      c_dir = parent_dir
+      f_list = filterList(sorted(os.listdir(c_dir)), c_dir)
+      f_index = f_list.index(dir_name) if dir_name in f_list else 0
+      history.append(dir_name)
+
     stdscr.refresh()
+
+def filterList(arr, c):
+  if arr:
+    if not dotFiles:
+      return sort_folders_first(list(filter(lambda item: not item.startswith("."), arr)), c)
+    else:
+      return sort_folders_first(arr, c)
+
+def sort_folders_first(file_list, current_path):
+    return sorted(file_list, key=lambda item: (not os.path.isdir(os.path.join(current_path, item)), item.lower()))
 
 curses.wrapper(main)
