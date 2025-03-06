@@ -2,32 +2,43 @@ import curses
 import os
 
 def main(stdscr):
+
+  curses.start_color()
+  curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+  curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLACK)
+  curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLUE)
+
   curses.curs_set(0)
   stdscr.clear()
-
+  
+  #variables:
   c_dir = os.getcwd()
   f_list = sorted(os.listdir(c_dir))
-
   f_index = 0
-
   history = []
 
   while True:
-    stdscr.addstr(1, 1, f" 📂 {c_dir}", curses.A_BOLD)
+    height, width = stdscr.getmaxyx()
+    stdscr.border(0)
+    stdscr.addstr(0, 2, " RovR 🛰 ", curses.A_BOLD)
+
+    stdscr.addstr(1, 2, f" 📂 {c_dir}", curses.A_BOLD)
 
     for i, item in enumerate(f_list):
-      if i == f_index:
-        stdscr.attron(curses.A_REVERSE)
+      full_path = os.path.join(c_dir, item)
+      is_dir = os.path.isdir(full_path)
 
-      if os.path.isdir(os.path.join(c_dir, item)):
-        icon = "📁"
-      elif os.path.isfile(os.path.join(c_dir, item)):
-        icon = "📄"
-      else:
-        icon = "🕸️"
-      stdscr.addstr(i + 3, 2, f"{icon} {item}")
+      color = curses.color_pair(1) if is_dir else curses.color_pair(2)
+
+      display_text = f"{' 📁' if is_dir else ' 📄'}{item}"
+      padded_text = ">"+display_text.ljust(width - 6)
+
       if i == f_index:
-        stdscr.attroff(curses.A_REVERSE)
+          stdscr.attron(curses.color_pair(3) | curses.A_BOLD)
+          stdscr.addstr(i + 3, 2, padded_text)
+          stdscr.attroff(curses.color_pair(3) | curses.A_BOLD)
+      else:
+          stdscr.addstr(i + 3, 2, display_text, color)
 
     key = stdscr.getch()
 
