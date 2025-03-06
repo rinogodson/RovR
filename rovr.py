@@ -16,9 +16,9 @@ def main(stdscr):
   f_list = sorted(os.listdir(c_dir))
   f_index = 0
   history = []
+  height, width = stdscr.getmaxyx()
 
   while True:
-    height, width = stdscr.getmaxyx()
     stdscr.border(0)
     stdscr.addstr(0, 2, " RovR 🛰 ", curses.A_BOLD)
 
