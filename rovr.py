@@ -1,5 +1,6 @@
 import curses
 import os
+import sys
 
 dotFiles = False
 
@@ -122,7 +123,14 @@ def main(stdscr):
       f_index = f_list.index(dir_name) if dir_name in f_list else 0
       history.append(dir_name)
       search_query = ""
+    elif key in (curses.KEY_ENTER, 10): 
+      selected_item = f_list[f_index]
+      new_path = os.path.join(c_dir, selected_item)
 
+      if os.path.isdir(new_path):  
+          curses.endwin()
+          print(f'Path: "{new_path}"')  
+          sys.exit(0)
     stdscr.refresh()
 
 def filterList(arr, c):
